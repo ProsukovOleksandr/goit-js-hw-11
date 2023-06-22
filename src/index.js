@@ -1,16 +1,15 @@
-import axios from 'axios';
 import Notiflix from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
+import {fetchData} from './api.js';
 const formEl = document.querySelector('.search-form');
 const inputEl = formEl[0];
 const loadMoreBtn = document.querySelector('.load-more');
 const galeryEl = document.querySelector('.gallery');
 loadMoreBtn.classList.add('is-hidden');
 let page;
-let limit = 40;
 let lightbox;
-
+const limit = 40;
 function createImgMarkup({
   webformatURL,
   largeImageURL,
@@ -50,12 +49,8 @@ formEl.addEventListener('submit', event => {
   page = 1;
   galeryEl.innerHTML = ' ';
   loadMoreBtn.classList.remove('is-hidden');
-  axios
-    .get(
-      `https://pixabay.com/api/?key=37512295-7e92ae3b8c2d51cd4aec1f8a1&q=${inputEl.value}&
-    image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=${limit}`
-    )
-    .then(headlines => {
+  console.log(fetchData())
+  fetchData(inputEl.value, page, limit).then(headlines => {
       let data = headlines.data;
       if (data.total === 0) {
         Notiflix.Notify.failure(
@@ -78,17 +73,9 @@ formEl.addEventListener('submit', event => {
 
 loadMoreBtn.addEventListener('click', () => {
   page += 1;
-  axios
-    .get(
-      `https://pixabay.com/api/?key=37512295-7e92ae3b8c2d51cd4aec1f8a1&q=${inputEl.value}&
-  image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=${limit}`
-    )
-    .then(headlines => {
+  fetchData(inputEl.value, page, limit).then(headlines => {
       let data = headlines.data;
-      console.log(page);
-      console.log(data.totalHits / page);
-
-      let cards = data.hits.map(element => {
+     let cards = data.hits.map(element => {
         let card = createImgMarkup(element);
         return card;
       });
