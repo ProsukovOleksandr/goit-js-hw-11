@@ -1,7 +1,7 @@
 import Notiflix from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import {fetchData} from './api.js';
+import { fetchData } from './api.js';
 const formEl = document.querySelector('.search-form');
 const inputEl = formEl[0];
 const loadMoreBtn = document.querySelector('.load-more');
@@ -49,33 +49,34 @@ formEl.addEventListener('submit', event => {
   page = 1;
   galeryEl.innerHTML = ' ';
   loadMoreBtn.classList.remove('is-hidden');
-  console.log(fetchData())
+  console.log(fetchData());
   fetchData(inputEl.value, page, limit).then(headlines => {
-      let data = headlines.data;
-      if (data.total === 0) {
-        Notiflix.Notify.failure(
-          'Sorry, there are no images matching your search query. Please try again'
-        );
-        return;
-      }
-      let cards = data.hits.map(element => {
-        let card = createImgMarkup(element);
-        return card;
-      });
-      galeryEl.insertAdjacentHTML('beforeend', cards.join(''));
-      lightbox = new SimpleLightbox('.gallery a', {
-        captionsData: 'alt',
-        captionsDelay: 250,
-        disableScroll: false,
-      });
+    let data = headlines.data;
+    if (data.total === 0) {
+      Notiflix.Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again'
+      );
+      return;
+    }
+    let cards = data.hits.map(element => {
+      let card = createImgMarkup(element);
+      return card;
     });
+    galeryEl.insertAdjacentHTML('beforeend', cards.join(''));
+    lightbox = new SimpleLightbox('.gallery a', {
+      captionsData: 'alt',
+      captionsDelay: 250,
+      disableScroll: false,
+    });
+  });
 });
 
 loadMoreBtn.addEventListener('click', () => {
   page += 1;
-  fetchData(inputEl.value, page, limit).then(headlines => {
+  fetchData(inputEl.value, page, limit)
+    .then(headlines => {
       let data = headlines.data;
-     let cards = data.hits.map(element => {
+      let cards = data.hits.map(element => {
         let card = createImgMarkup(element);
         return card;
       });
