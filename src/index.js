@@ -19,7 +19,7 @@ function createImgMarkup({
   comments,
   downloads,
 }) {
-  return (html = `
+  return  `
     <div class="photo-card">
   <a href="${largeImageURL}"><img src="${webformatURL}" alt="${tags} loading="lazy"></a>
   <div class="info">
@@ -41,7 +41,7 @@ function createImgMarkup({
     </p>
   </div>
 </div>
-    `);
+  `;
 }
 
 formEl.addEventListener('submit', event => {
