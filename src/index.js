@@ -1,5 +1,5 @@
-import Notiflix from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
+import { initNotify } from './notiflix';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import { fetchData } from './api.js';
 const formEl = document.querySelector('.search-form');
@@ -8,9 +8,21 @@ const loadMoreBtn = document.querySelector('.load-more');
 const galeryEl = document.querySelector('.gallery');
 loadMoreBtn.classList.add('is-hidden');
 let page;
-let lightbox;
+const lightbox = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionsDelay: 250,
+  disableScroll: false,
+});
 const limit = 40;
-function createImgMarkup({webformatURL,largeImageURL, tags,likes,views,comments,downloads,}){
+function createImgMarkup({
+  webformatURL,
+  largeImageURL,
+  tags,
+  likes,
+  views,
+  comments,
+  downloads,
+}) {
   let html = `
   <div class="photo-card">
 <a href="${largeImageURL}"><img src="${webformatURL}" alt="${tags} loading="lazy"></a>
@@ -36,31 +48,28 @@ function createImgMarkup({webformatURL,largeImageURL, tags,likes,views,comments,
 `;
   return html;
 }
-
 formEl.addEventListener('submit', event => {
   event.preventDefault();
+  if (inputEl.value.trim() === '') {
+    return;
+  }
   page = 1;
   galeryEl.innerHTML = ' ';
-  loadMoreBtn.classList.remove('is-hidden');
-  console.log(fetchData());
   fetchData(inputEl.value, page, limit).then(headlines => {
     let data = headlines.data;
     if (data.total === 0) {
-      Notiflix.Notify.failure(
+      initNotify(
         'Sorry, there are no images matching your search query. Please try again'
       );
       return;
     }
+    loadMoreBtn.classList.remove('is-hidden');
     let cards = data.hits.map(element => {
       let card = createImgMarkup(element);
       return card;
     });
     galeryEl.insertAdjacentHTML('beforeend', cards.join(''));
-    lightbox = new SimpleLightbox('.gallery a', {
-      captionsData: 'alt',
-      captionsDelay: 250,
-      disableScroll: false,
-    });
+    lightbox.refresh();
   });
 });
 
@@ -68,7 +77,14 @@ loadMoreBtn.addEventListener('click', () => {
   page += 1;
   fetchData(inputEl.value, page, limit)
     .then(headlines => {
+      console.log(headlines);
       let data = headlines.data;
+      if (data.hits.length < limit) {
+        initNotify(
+          "We're sorry, but you've reached the end of search results."
+        );
+        loadMoreBtn.classList.add('is-hidden');
+      }
       let cards = data.hits.map(element => {
         let card = createImgMarkup(element);
         return card;
@@ -77,49 +93,7 @@ loadMoreBtn.addEventListener('click', () => {
       lightbox.refresh();
     })
     .catch(() => {
-      Notiflix.Notify.failure(
-        "We're sorry, but you've reached the end of search results."
-      );
+      initNotify("We're sorry, but you've reached the end of search results.");
       loadMoreBtn.classList.add('is-hidden');
     });
-});
-Notiflix.Notify.init({
-  width: '280px',
-  position: 'right-top', // 'right-top' - 'right-bottom' - 'left-top' - 'left-bottom' - 'center-top' - 'center-bottom' - 'center-center'
-  distance: '10px',
-  opacity: 1,
-  borderRadius: '5px',
-  rtl: false,
-  timeout: 3000,
-  messageMaxLength: 110,
-  backOverlay: false,
-  backOverlayColor: 'rgba(0,0,0,0.5)',
-  plainText: true,
-  showOnlyTheLastOne: false,
-  clickToClose: false,
-  pauseOnHover: true,
-
-  ID: 'NotiflixNotify',
-  className: 'notiflix-notify',
-  zindex: 4001,
-  fontFamily: 'Quicksand',
-  fontSize: '13px',
-  cssAnimation: true,
-  cssAnimationDuration: 400,
-  cssAnimationStyle: 'fade', // 'fade' - 'zoom' - 'from-right' - 'from-top' - 'from-bottom' - 'from-left'
-  closeButton: false,
-  useIcon: true,
-  useFontAwesome: false,
-  fontAwesomeIconStyle: 'basic', // 'basic' - 'shadow'
-  fontAwesomeIconSize: '34px',
-
-  failure: {
-    background: '#ff5549',
-    textColor: '#fff',
-    childClassName: 'notiflix-notify-failure',
-    notiflixIconColor: 'rgba(0,0,0,0.2)',
-    fontAwesomeClassName: 'fas fa-times-circle',
-    fontAwesomeIconColor: 'rgba(0,0,0,0.2)',
-    backOverlayColor: 'rgba(255,85,73,0.2)',
-  },
 });
